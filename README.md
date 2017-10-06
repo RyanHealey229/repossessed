@@ -1,2 +1,2 @@
 # repossessed
-Just stuff I need to keep or share online
+Git off my lawn
