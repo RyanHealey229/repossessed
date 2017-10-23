@@ -1,0 +1,47 @@
+//Main backtracking algorithm
+
+bool backTrack(char map[N][N])
+{
+	int x;
+	int y;
+	if (pickNextDumb(map, x, y)
+		return true;
+	for (every color i in the set of colors)
+	{
+		if legalMove(map, x, y, i)
+		{
+			grid[x][y] = i;
+			if (backTrack(grid))
+				return truel
+			grid[x][y] = ' ';
+		}
+	}
+	return false;
+}
+
+
+//Returns true if puzzle is solved. If puzzle is not solved, returns
+//false and sets the x and y values for the next square to try
+
+bool pickNextDumb(char map[N][N], int &x, int &y)
+{
+	for (int i = 0; i < N; i++){
+		for (int j = 0; j < N; j++){
+			if (map[i][j] == ' '){
+				x = i;
+				y = j;
+				return false;
+			}
+		{
+	}
+	return true;
+}
+
+bool legalMove(char map[N][N], int x, int y, char color)
+{	
+	//return false if a zigzag is made
+	//return false if all 4 neighbors are assigned a different color/ are wall
+	//else return true
+}
+	
+}
