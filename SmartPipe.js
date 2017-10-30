@@ -41,7 +41,7 @@ var possibilities=     [[[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]]];
 
-//var PriorityQueue = require('priorityqueuejs');
+var queue = new PriorityQueue();
 //var queue = new PriorityQueue(function(a,b){return a.cash = b.cash});
 //figure out how to define priority queue
 var colors = ['Y','B','G','R','O'];
@@ -55,7 +55,8 @@ for (var j = 0; j < countSameNeighbors.length; j++){
 
 for (var j = 0; j < countSameNeighbors.length; j++){
     for (var k =0; k< countSameNeighbors.length; k++){
-        updateForwardcheck(grid,possibilities,j,k);
+        if (grid[j][k] == '_')
+            updateForwardCheck(grid,possibilities,j,k);
     }
 }
 
@@ -64,31 +65,24 @@ if (solvePipe(grid, colors) == true)
 else
     console.log("No Solution");
 
-function solvePipe(grid, colorList, r, c)
+function solvePipe(grid)
 {
     var rc = [0,0];
     if (!anyUnassigned(grid, rc))
         return true;
+    var colorList = possibilities[rc[0]][rc[1]];
     for (var i = 0; i < colorList.length; i++)
     {
-    //    console.log("length", colorList.length);
         var color = colorList[i];
-  //      console.log("it's me, mr. meeseeks");
-//        console.log(rc);
         if (possibleAssignment(grid, rc[0], rc[1], color)){
             visited.push(rc);
-      //      console.log("see me");
             assignments++;
             grid[rc[0]][rc[1]] = color;
-        //    console.log(grid);
-            if (solvePipe(grid, colorList)) {
+            if (solvePipe(grid)) {
                 return true;
             }
-      //      console.log("old rc", rc);
-            //getLast(grid,rc);
             rc = visited.pop();
             grid[rc[0]][rc[1]] = "_";
-       //     console.log("tried to back it up");
         }
     }
     //console.log("here");
@@ -112,36 +106,65 @@ function anyUnassigned(grid, rc) //why do I need row and col?
     return false;
 }
 
-function updateForwardcheck(grid,fcgrid,r,c) {
+function updateForwardCheck(grid,fcgrid,r,c) {
     var neighborColors =[];
+    var neighbors = 0;
+    var double = '';
+    if (countNeighbors[r][c] < 3)
+        return;     //do nothing is it has less than 3 neighbors
     if (r + 1 < grid.length) {
-        if (grid[r + 1][c]
-            counter++;
-        if (grid[r + 1][c] != "_")
+        if (grid[r+1][c] != "_") {
+            neighborColors.push(grid[r + 1][c]);
             neighbors++;
+        }
     }
-    else neighbors++;
+    else{
+        neighbors++;
+    }
     if (r - 1 >= 0) {
-        if (grid[r - 1][c] == val)
-            counter++;
-        if (grid[r - 1][c] != "_")
+        if (grid[r - 1][c] != "_") {
+            if (neighborColors.indexOf(grid[r - 1][c]) == -1) {
+                neighborColors.push(grid[r - 1][c]);
+            }
+            else
+                double = grid[r - 1][c];
             neighbors++;
+        }
     }
-    else neighbors++;
+    else{
+        neighbors++;
+    }
     if (c + 1 < grid.length) {
-        if (grid[r][c + 1] == val)
-            counter++;
-        if (grid[r][c + 1] != "_")
+        if (grid[r][c+1] != "_") {
+            if (neighborColors.indexOf(grid[r][c + 1]) == -1) {
+                neighborColors.push(grid[r][c+1]);
+            }
+            else
+                double = grid[r - 1][c];
             neighbors++;
+        }
     }
-    else neighbors++;
+    else {
+        neighbors++;
+    }
     if (c-1 >= 0) {
-        if (grid[r][c - 1] == val)
-            counter++;
-        if (grid[r][c - 1] != "_")
+        if (grid[r][c-1] != "_") {
+            if (neighborColors.indexOf(grid[r][c - 1]) == -1) {
+                neighborColors.push(grid[r][c-1]);
+            }
+            else
+                double = grid[r - 1][c];
             neighbors++;
+        }
     }
-    else neighbors++;
+    else{
+        neighbors++;
+    }
+    if (neighbors == 4 && neighborColors.length == 3)
+        fcgrid[r][c] = [].push(double);
+    if (neighbors == 4 || neighbors == 3) {
+        fcgrid[r][c] =neighborColors;
+    }
 }
 //if 1 neighbor --> any color
 //if 2 neighbors --> any color
