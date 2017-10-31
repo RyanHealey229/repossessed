@@ -1,19 +1,18 @@
 //===================================================================
 //  BT_Game Implementation                                         //
 //===================================================================
-// Needs adjustments to manage local objects			   //
-//===================================================================
-
 
 //===================================================================
 // Define Classes
 
+// Define piece member variables
 function Piece(rr, cc, pp) {
 	this.row = rr;
 	this.col = cc;
 	this.player = pp;
 }
 
+// Define board member variables and initialization
 function Board(board) {
 	var p;
 	var piece;
@@ -25,6 +24,9 @@ function Board(board) {
 		this.copy(board);
 }
 
+// Define BT_Game Member Variables
+// p1str and p2str declare search function and heuristic
+// use3 declares if game should use '3 Workers to Base' rules
 function BT_Game(p1str, p2str, use3) {
 	// Player strings: 'usr1', 'mmD1', 'mmD2', 'abD1', 'abD2', 'abO1', 'abO2'
 	this.p1 = p1str;
@@ -42,6 +44,7 @@ function BT_Game(p1str, p2str, use3) {
 //===================================================================
 // Initialize Board
 
+// Initialize Breakthrough
 BT_Game.prototype.start = function() {
 	this.expanded = 0;
 	this.num_moves = 0;
@@ -54,6 +57,7 @@ BT_Game.prototype.start = function() {
 	this.play_r(board, this.p1, this.p2);
 }
 
+// Make a fresh board
 Board.prototype.clear = function() {
 	this.score = 0;
 	this.grid = [];
@@ -71,6 +75,7 @@ Board.prototype.clear = function() {
 	}
 }
 
+// Copy a board
 Board.prototype.copy = function(board) {
 	this.score = board.score;
 	this.grid = [];
@@ -89,6 +94,9 @@ Board.prototype.copy = function(board) {
 //===================================================================
 // Play
 
+// Main loop: Recursively play a move for each player
+// Times moves and checks for wins
+// Blocks staggered by time to allow visualization
 BT_Game.prototype.play_r = function(board, p1, p2) {
 	var board_copy = new Board(board);
 	var moveChoice = (0, 0, 0, 0); // (row, col, dx, score)
@@ -144,58 +152,10 @@ BT_Game.prototype.play_r = function(board, p1, p2) {
 	}
 }
 
-
-BT_Game.prototype.play = function(board, p1, p2) {
-	var board_copy = new Board(board);
-	var moveChoice = (0, 0, 0, 0); // (row, col, dx, score)
-	var start_time, end_time;
-
-	// Player 1 move
-	this.num_moves++;
-	start_time = new Date().getTime();
-	moveChoice = this.getMove(board_copy, p1, p2, true);
-	this.move(board_copy, board_copy.grid[moveChoice[0]][moveChoice[1]], moveChoice[2]);
-
-	// Show board
-	//this.printGrid(board_copy.grid);
-	this.updateHTML(board_copy.grid);
-
-	// Check win
-	end_time = new Date().getTime();
-	this.time += end_time-start_time;
-	if (this.checkWin(board_copy) == 1) {this.won = true;}
-	else {
-
-	  var that = this;
-	  //setTimeout(function() {
-
-	    // Player 2 move
-	    this.num_moves++;
-	    start_time = new Date().getTime();
-	    moveChoice = that.getMove(board_copy, p2, p1, false);
-	    that.move(board_copy, board_copy.grid[moveChoice[0]][moveChoice[1]], moveChoice[2]);
-
-	    // Show board
-	    //that.printGrid(board_copy.grid);
-	    that.updateHTML(board_copy.grid);
-
-	    // Check win
-	    end_time = new Date().getTime();
-	    this.time += end_time-start_time;
-	    if (that.checkWin(board_copy) == 2) this.won = true;
-
-	      // Next move
-	      //setTimeout(function() {
-		if (!that.won) that.play_r(board_copy, p1, p2);
-		else {console.log("WON"); that.printWin();}
-	      //}, 300);
-	  //}, 300);
-	}
-}
-
 //===================================================================
 // Show board
 
+// Print grid to console as text
 BT_Game.prototype.printGrid = function(grid) {
 	var logtext = "";
 	logtext += "  |0 1 2 3 4 5 6 7\n";
@@ -213,6 +173,7 @@ BT_Game.prototype.printGrid = function(grid) {
 	console.log(logtext);
 }
 
+// Used to visualize pieces via html and css
 BT_Game.prototype.updateHTML = function(grid) {
 	var htmltext = "";
 	for (var i = 0; i < 8; i+=2) {
@@ -253,6 +214,7 @@ BT_Game.prototype.updateHTML = function(grid) {
 //===================================================================
 // Search by strategy
 
+// Switchboard for moves by search function
 BT_Game.prototype.getMove = function(board, player, opponent, isP1) {
 	//console.log("Getting Move");
 	var eval = player[2] + player[3];
@@ -265,7 +227,7 @@ BT_Game.prototype.getMove = function(board, player, opponent, isP1) {
 	else if (player[0] == 'm') return this.minimax(board, 3, isP1, eval); 
 
 	// Alpha-Beta
-	else if (player[0] == 'a') return this.alphabeta(board, 3, -Infinity, Infinity, isP1, eval);
+	else if (player[0] == 'a') return this.alphabeta(board, 4, -Infinity, Infinity, isP1, eval);
 
 	// Greedy
 	else if (player[0] == 'g') return this.alphabeta(board, 1, -Infinity, Infinity, isP1, eval);
@@ -277,6 +239,8 @@ BT_Game.prototype.getMove = function(board, player, opponent, isP1) {
 	}
 }
 
+// User Move
+// Get user input and convert to a move
 BT_Game.prototype.userMove = function(board, isP1) {
 	//console.log("Getting User Move");
 	this.printGrid(board.grid);
@@ -302,6 +266,9 @@ BT_Game.prototype.userMove = function(board, isP1) {
 	return m;
 }
 
+// Minimax Search
+// Alternates between maximum and minimum scoring to simulate other player
+// Returns a move
 BT_Game.prototype.minimax = function(board, depth, isMax, eval) {
 	//console.log("Getting Minimax Move");
 	if (depth == 0 || this.checkWin(board)) return [0, 0, 0, this.getEval(board, isMax ? 1 : 2, eval)];
@@ -339,6 +306,9 @@ BT_Game.prototype.minimax = function(board, depth, isMax, eval) {
 	return best;
 }
 
+// Alpha-Beta Pruning Search
+// Like minimax, but does not expand nodes which will not produce a better value
+// Returns a move
 BT_Game.prototype.alphabeta = function(board, depth, a, b, isMax, eval) {
 	//console.log("Getting Alpha-Beta Move");
 	if (depth == 0 || this.checkWin(board)) return [0, 0, 0, this.getEval(board, isMax ? 1 : 2, eval)];
@@ -378,7 +348,7 @@ BT_Game.prototype.alphabeta = function(board, depth, a, b, isMax, eval) {
 }
 
 //===================================================================
-// Get moves from a board
+// Get potential moves from a board
 
 BT_Game.prototype.getMoves = function(board, isP1) {
 	var p = isP1 ? 1 : 2;
@@ -403,6 +373,7 @@ BT_Game.prototype.getMoves = function(board, isP1) {
 //===================================================================
 // Evaluate board
 
+// Switchboard to use appropriate heuristic based on selected players
 BT_Game.prototype.getEval = function(board, p, eval) {
 	if (eval[0] == 'D') {
 		if (eval[1] == '1') {
@@ -420,73 +391,57 @@ BT_Game.prototype.getEval = function(board, p, eval) {
 	return 0;
 }
 
+// First Defensive Heuristic
 BT_Game.prototype.evalD1 = function(board, p) {
 	return 2*(30-board.pieces[3-p].length) + Math.random();
 }
 
+// First Offensive Heuristic
 BT_Game.prototype.evalO1 = function(board, p) {
 	return 2*(board.pieces[p].length) + Math.random();
 }
 
+// Second Defensive Heuristic
 BT_Game.prototype.evalD2 = function(board, p) {
-	// Should beat evalO1
+	// More focused on preventing the enemy from moving into your territory or capturing your pieces
+	// Should beat evalO1 3/4 times
+	var o = 3-p;
 	var pCount = board.pieces[p].length;
-	var oCount = board.pieces[3-p].length;
-	var minDist = 8;
+	var oCount = board.pieces[o].length;
+	var oMinDist = 8;
+	var oMaxDist = 0;
 	var dist;
-	var o = p-3;
-	for (var i = 0; i < oCount; i++)
-		sumDist += (o-1)*7+(o-2*o)*board.pieces[o][i].row;
-	return 2*(pCount+oCount) + 3*sumDist/oCount + Math.random();
+	for (var i = 0; i < oCount; i++) {
+		dist = (o-1)*7+(3-2*o)*board.pieces[o][i].row;
+		if (dist < oMinDist) oMinDist = dist;
+		if (dist > oMaxDist) oMaxDist = dist;
+	}
+	var score = (2*oMinDist + oMaxDist) + Math.pow(pCount, 4);
+	return score + Math.random();
 }
 
+// Second Offensive Heuristic
 BT_Game.prototype.evalO2 = function(board, p) {
-	// Should beat evalD1
+	// More focused on moving forward and capturing enemy pieces
+	// Should beat evalD2 3/4 times
 	var pCount = board.pieces[p].length;
 	var oCount = board.pieces[3-p].length;
-	var pSumDist = 0;
 	var pMinDist = 8;
+	var pMaxDist = 0;
 	var dist;
 	for (var i = 0; i < pCount; i++) {
 		dist = (p-1)*7+(3-2*p)*board.pieces[p][i].row;
-		pSumDist += dist;
 		if (dist < pMinDist) pMinDist = dist;
+		if (dist > pMaxDist) pMaxDist = dist;
 	}
-	return 16*pCount - pMinDist*pMinDist - pSumDist/pCount + Math.random();
-}
-
-/*
-BT_Game.prototype.evalO2 = function(board, p) {
-	// Should beat evalD1
-	var p1Count = board.pieces[1].length;
-	var p2Count = board.pieces[2].length;
-	var p1SumDist = 0;
-	var p2SumDist = 0;
-	var p1MinDist = 8;
-	var p2MinDist = 8;
-	var dist;
-	for (var i = 0; i < p1Count; i++) {
-		dist = board.pieces[1][i].row;
-		p1SumDist += dist;
-		if (dist < p1MinDist) p1MinDist = dist;
-	}
-	for (var i = 0; i < p2Count; i++) {
-		dist = 7-board.pieces[2][i].row;
-		p2SumDist += dist;
-		if (dist < p2MinDist) p2MinDist = dist;
-	}
-	var score;
-	if (p == 1) {
-		score = 2*p1Count + p2Count - p1MinDist;
-		if (p1MinDist == 0) score += 100;
-		if (p2MinDist == 0) score += -100;
-	} else if (p == 2) {
-		score = 2*p2Count + p1Count - p2MinDist;
-		if (p2MinDist == 0) score += 100;
-		if (p1MinDist == 0) score += -100;
-	}
+	var score = (30-2*pMinDist - pMaxDist) - Math.pow(oCount, 4);
 	return score + Math.random();
 }
+/*
+	if (pMinDist < 2) score += 100000;
+	if (pMinDist < 1) score += 100000;
+	if (oMinDist < 2) score += -100000;
+	if (oMinDist < 1) score += -100000;
 */
 
 
@@ -532,6 +487,7 @@ BT_Game.prototype.move = function(board, pc, dx) {
 		return false;
 	}
 	if ((pc.player == 1 && pc.row == 0) || (pc.player == 2 && pc.row == 7)) {
+		console.log("IN ROW 0 OR ROW 7");
 		return false;
 	}
 
@@ -570,6 +526,7 @@ BT_Game.prototype.move = function(board, pc, dx) {
 //===================================================================
 // Check win
 
+// Check win in general case
 BT_Game.prototype.checkWin = function(board) {
 	if (this.three_workers) return this.checkWin3(board);
 	var winner = 0;
@@ -583,6 +540,7 @@ BT_Game.prototype.checkWin = function(board) {
 	return winner;
 }
 
+// Check win if playing with 3-to-base rules
 BT_Game.prototype.checkWin3 = function(board) {
 	var winner = 0;
 	if (board.pieces[1].length <= 2) winner = 2;
@@ -602,6 +560,7 @@ BT_Game.prototype.checkWin3 = function(board) {
 	return winner;
 }
 
+// Verify win and print game statistics to console and html
 BT_Game.prototype.printWin = function() {
 	var board = this.winboard;
 	if (!board) return;
