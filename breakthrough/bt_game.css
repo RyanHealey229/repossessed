@@ -1,0 +1,49 @@
+body {
+	color: white;
+	background-color: rgba(56, 10, 0, 1);
+	background: url('https://images-na.ssl-images-amazon.com/images/I/91zRT51ws5L._SL1500_.jpg');
+	background-size: cover;
+}
+
+#board {
+	width: 800px;
+	height: 800px;
+	border: 5px solid black;
+	margin: auto;
+}
+fieldset, #stats_wrapper {
+	width: 800px;
+	margin: auto;
+}
+.row {
+	clear: left;
+}
+.space {
+	width: 100px;
+	height: 100px;
+	float: left;
+}
+.space_b {
+	background-color: rgba(76, 20, 0, 1);
+}
+.space_w {
+	background-color: rgba(221, 206, 137, 1);
+}
+.piece {
+	width: 75px;
+	height: 75px;
+	border-radius: 50%;
+	border: 2.5px solid black;
+	margin: 10px;
+}
+.p1 {
+	background-color: rgba(249, 236, 199);
+}
+.p2 {
+	background-color: rgba(43, 21, 9, 1);
+}
+
+#stats_wrapper {
+	margin-top: 5px;
+	border: 2px solid white;
+}

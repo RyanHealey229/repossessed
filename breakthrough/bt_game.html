@@ -1,0 +1,86 @@
+<!Doctype html>
+<html>
+<head>
+	<meta charset='utf-8'>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<script src='bt_game.js'></script>
+	<link rel='stylesheet' href='bt_game.css'>
+</head>
+<body>
+	<h1>Breakthrough</h1>
+	<h3>The Game</h3>
+	<button onclick="startGame()">Play</button>
+	<div id='board'></div>
+	<fieldset>
+        	<legend>Player 1</legend>
+		<input type="radio" name="p1_type" id="minimax_1"> Mini-Max
+		<input type="radio" name="p1_type" id="alphabeta_1"> Alpha-Beta
+		<input type="radio" name="p1_type" id="user_1"> User
+		<input type="radio" name="p1_type" id="greedy_1"> Greedy
+		<br />
+		<input type="radio" name="p1_heuristic" id="D1_1"> Defensive 1
+		<input type="radio" name="p1_heuristic" id="D2_1"> Defensive 2
+		<input type="radio" name="p1_heuristic" id="O1_1"> Offensive 1
+		<input type="radio" name="p1_heuristic" id="O2_1"> Offensive 2
+        </fieldset>
+	<fieldset>
+        	<legend>Player 2</legend>
+		<input type="radio" name="p2_type" id="minimax_2"> Mini-Max
+		<input type="radio" name="p2_type" id="alphabeta_2"> Alpha-Beta
+		<input type="radio" name="p2_type" id="user_2"> User
+		<input type="radio" name="p2_type" id="greedy_2"> Greedy
+		<br />
+		<input type="radio" name="p2_heuristic" id="D1_2"> Defensive 1
+		<input type="radio" name="p2_heuristic" id="D2_2"> Defensive 2
+		<input type="radio" name="p2_heuristic" id="O1_2"> Offensive 1
+		<input type="radio" name="p2_heuristic" id="O2_2"> Offensive 2
+        </fieldset>
+	<fieldset>
+		<legend>3 Workers to Base Rules</legend>
+		<input type="radio" name="use3" id="use3_true"> True
+		<input type="radio" name="use3" id="use3_false"> False
+        </fieldset>
+	<div id='stats_wrapper'>
+		<pre id='stats_box'></pre>
+	</div>
+</body>
+	<script>
+		function startGame() {
+			var p1 = '';
+			var p2 = '';
+			var use3 = false;
+
+			// Get Player 1
+			if ($('#minimax_1').is(":checked")) p1='mm';
+			else if ($('#alphabeta_1').is(":checked")) p1='ab';
+			else if ($('#user_1').is(":checked")) p1='us';
+			else if ($('#greedy_1').is(":checked")) p1='gr';
+			if ($('#D1_1').is(":checked")) p1+='D1';
+			else if ($('#D2_1').is(":checked")) p1+='D2';
+			else if ($('#O1_1').is(":checked")) p1+='O1';
+			else if ($('#O2_1').is(":checked")) p1+='O2';
+
+			// Get Player 2
+			if ($('#minimax_2').is(":checked")) p2='mm';
+			else if ($('#alphabeta_2').is(":checked")) p2='ab';
+			else if ($('#user_2').is(":checked")) p2='us';
+			else if ($('#greedy_2').is(":checked")) p2='gr';
+			if ($('#D1_2').is(":checked")) p2+='D1';
+			else if ($('#D2_2').is(":checked")) p2+='D2';
+			else if ($('#O1_2').is(":checked")) p2+='O1';
+			else if ($('#O2_2').is(":checked")) p2+='O2';
+
+			// Get use3
+			if ($('#use3_true').is(":checked")) use3 = true;
+
+			console.log(p1, ' vs ', p2);
+			if (p1.length != 4 || p2.length != 4) return;
+
+			var game = new BT_Game(p1, p2, use3);
+			game.start(function() {
+				game.console.log("won");
+				game.printWin();
+			});
+		}
+	</script>
+</html>

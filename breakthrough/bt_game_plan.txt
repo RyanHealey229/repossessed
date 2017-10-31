@@ -1,0 +1,18 @@
+
+
+
+1. Initialize Board
+	1.1 Make board
+	1.2 Make pieces
+	1.3 Get strategies
+2. Play: While not won...
+	2.1 Show board
+	2.2 Player 1 move
+		2.2.1 Search by strategy
+		2.2.2 Make the move
+	2.3 check win
+	2.4 Show board
+	2.5 Player 2 move
+		2.5.1 Search by stragegy
+		2.5.2 Make the move
+	2.6 check win
