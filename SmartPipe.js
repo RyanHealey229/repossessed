@@ -1,11 +1,63 @@
-var grid = [['_','_','_','O','_','_','_'],
+/*var grid = [['_','_','_','O','_','_','_'],
     ['_','B','_','_','G','Y','_'],
     ['_','_','_','B','R','_','_'],
     ['_','_','_','Y','_','_','_'],
     ['_','_','_','_','_','_','_'],
     ['_','_','R','_','_','_','_'],
     ['G','_','_','_','O','_','_']];
+var source =[['_','_','_','O','_','_','_'],
+    ['_','B','_','_','G','Y','_'],
+    ['_','_','_','B','R','_','_'],
+    ['_','_','_','Y','_','_','_'],
+    ['_','_','_','_','_','_','_'],
+    ['_','_','R','_','_','_','_'],
+    ['G','_','_','_','O','_','_']];
+*/
+/*
+//8x8
+var grid =[['_','_','_','R','_','_','G','_'],
+    ['_','B','Y','P','_','_','_','_'],
+    ['_','_','_','O','_','G','R','_'],
+    ['_','_','_','P','_','_','_','_'],
+    ['_','_','_','_','_','_','Y','_'],
+    ['_','_','_','_','B','O','Q','_'],
+    ['_','Q','_','_','_','_','_','_'],
+    ['_','_','_','_','_','_','_','_']];
 
+var source =[['_','_','_','R','_','_','G','_'],
+    ['_','B','Y','P','_','_','_','_'],
+    ['_','_','_','O','_','G','R','_'],
+    ['_','_','_','P','_','_','_','_'],
+    ['_','_','_','_','_','_','Y','_'],
+    ['_','_','_','_','B','O','Q','_'],
+    ['_','Q','_','_','_','_','_','_'],
+    ['_','_','_','_','_','_','_','_']];
+*/
+
+//9x9
+var grid = [
+    ['D','_','_','B','O','K','_','_','_'],
+    ['_','_','O','_','_','R','_','_','_'],
+    ['_','_','R','Q','_','_','Q','_','_'],
+    ['D','B','_','_','_','_','_','_','_'],
+    ['_','G','_','_','_','_','_','_','_'],
+    ['_','_','_','P','_','_','_','_','G'],
+    ['_','_','Y','_','_','_','Y','_','_'],
+    ['_','_','_','_','_','_','K','P','_'],
+    ['_','_','_','_','_','_','_','_','_']
+]
+var source = [
+    ['D','_','_','B','O','K','_','_','_'],
+    ['_','_','O','_','_','R','_','_','_'],
+    ['_','_','R','Q','_','_','Q','_','_'],
+    ['D','B','_','_','_','_','_','_','_'],
+    ['_','G','_','_','_','_','_','_','_'],
+    ['_','_','_','P','_','_','_','_','G'],
+    ['_','_','Y','_','_','_','Y','_','_'],
+    ['_','_','_','_','_','_','K','P','_'],
+    ['_','_','_','_','_','_','_','_','_']
+]
+/*
 var countNeighbors =
     [[0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0],
@@ -14,6 +66,7 @@ var countNeighbors =
         [0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0]];
+*/
 var countSameNeighbors =
     [[0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0],
@@ -23,16 +76,10 @@ var countSameNeighbors =
     [0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0]];
 
+var start = new Date().getTime();
 var visited = [];
 var assignments = 0;
 
-var source =[['_','_','_','O','_','_','_'],
-    ['_','B','_','_','G','Y','_'],
-    ['_','_','_','B','R','_','_'],
-    ['_','_','_','Y','_','_','_'],
-    ['_','_','_','_','_','_','_'],
-    ['_','_','R','_','_','_','_'],
-    ['G','_','_','_','O','_','_']];
 var possibilities=     [[[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]],
@@ -41,11 +88,11 @@ var possibilities=     [[[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]],
     [[],[],[],[],[],[],[]]];
 
-var queue = new PriorityQueue();
 //var queue = new PriorityQueue(function(a,b){return a.cash = b.cash});
 //figure out how to define priority queue
-var colors = ['Y','B','G','R','O'];
+var colors = ['Y','B','G','R','O', 'P', 'Q', 'K', 'D'];
 
+/*
 for (var j = 0; j < countSameNeighbors.length; j++){
     for (var k =0; k< countSameNeighbors.length; k++){
         updateGrid(grid,countNeighbors, countSameNeighbors, j, k);
@@ -58,27 +105,34 @@ for (var j = 0; j < countSameNeighbors.length; j++){
         if (grid[j][k] == '_')
             updateForwardCheck(grid,possibilities,j,k);
     }
-}
+}*/
+
 
 if (solvePipe(grid, colors) == true)
     console.log(grid);
 else
     console.log("No Solution");
+console.log("Assignments: ",assignments);
+var end = new Date().getTime();
+var time = end-start;
+console.log("Time : ", time);
 
-function solvePipe(grid)
+function solvePipe(grid, colorList)
 {
     var rc = [0,0];
-    if (!anyUnassigned(grid, rc))
+    if (!findMostNeighbors(grid,rc))
         return true;
-    var colorList = possibilities[rc[0]][rc[1]];
+    console.log(rc);
+   // var colorList = possibilities[rc[0]][rc[1]];
     for (var i = 0; i < colorList.length; i++)
     {
         var color = colorList[i];
+        console.log((grid));
         if (possibleAssignment(grid, rc[0], rc[1], color)){
             visited.push(rc);
             assignments++;
             grid[rc[0]][rc[1]] = color;
-            if (solvePipe(grid)) {
+            if (solvePipe(grid,colorList)) {
                 return true;
             }
             rc = visited.pop();
@@ -94,6 +148,7 @@ function solvePipe(grid)
 //Searches for any unassigned grid elements
 function anyUnassigned(grid, rc) //why do I need row and col?
 {
+    findMostNeighbors(grid,rc);
     for (var r = 0; r < grid.length; r++){
         for (var c = 0; c < grid.length; c++){
             if (grid[r][c] == '_') {
@@ -209,6 +264,32 @@ function updateGrid (grid,neighborgrid,samegrid,r,c) {
     samegrid[r][c] = counter;
 }
 
+function countNeighbors(grid,r,c) {
+    var neighbors = 0;
+    var val = grid[r][c];
+    if (r + 1 < grid.length) {
+        if (grid[r + 1][c] != "_")
+            neighbors++;
+    }
+    else neighbors++;
+    if (r - 1 >= 0) {
+        if (grid[r - 1][c] != "_")
+            neighbors++;
+    }
+    else neighbors++;
+    if (c + 1 < grid.length) {
+        if (grid[r][c + 1] != "_")
+            neighbors++;
+    }
+    else neighbors++;
+    if (c-1 >= 0) {
+        if (grid[r][c - 1] != "_")
+            neighbors++;
+    }
+    else neighbors++;
+    return neighbors;
+}
+
 //cannot zigzag --> checks for that
 function lessThan3Neighbors (grid, r, c) {
     if (r < 0 || c < 0 || r >= grid.length || c >= grid.length)
@@ -263,6 +344,7 @@ function lessThan3Neighbors (grid, r, c) {
 //determines if a location can be assigned a val
 function possibleAssignment (grid, r, c, val)
 {
+    console.log(grid, r, c, val);
     //we need to describe the constraints here
     grid[r][c] = val;
     var check =  lessThan3Neighbors(grid,r,c)&&
@@ -270,4 +352,29 @@ function possibleAssignment (grid, r, c, val)
         &&lessThan3Neighbors(grid,r-1, c)&&lessThan3Neighbors(grid,r, c-1);
     grid[r][c] = "_";
     return check;
+}
+
+//create new queue
+function findMostNeighbors(grid, rc){
+    var anyleft =false;
+    var most = -1;
+    for (var j = 0; j < grid.length; j++) {
+        for (var k = 0; k < grid.length; k++) {
+            if (grid[j][k] == '_'){
+                anyleft = true;
+                var numNeigh = countNeighbors(grid,j,k);
+                if (numNeigh > most)
+                {
+                    most = numNeigh;
+                    rc[0]=j;
+                    rc[1]=k;
+                }
+                if (most ==4){
+                    return anyleft;
+                }
+            }
+        }
+    }
+    console.log(rc,grid[rc[0]][rc[1]]);
+    return anyleft;
 }
