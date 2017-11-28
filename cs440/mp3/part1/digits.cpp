@@ -20,9 +20,15 @@ void evaluate();
 
 
 //==================================================================================================
+// The main function:
+//		1. Creates the arrays to count digit occurrences and feature occurrences
+//		2. Trains the arrays via test data and Tests test data using the occurrence arrays
+//		3. Deletes the occurrence arrays
 //==================================================================================================
 int main()
 {
+//------------------------------------------------
+// 1.
 	int *runs = new int[10];
 	int ***freqs = new int** [10];
 	for (int n = 0; n < 10; n++)
@@ -37,11 +43,12 @@ int main()
 		}
 	}
 //------------------------------------------------
-
+// 2.
 	train(freqs, runs);
 	test(freqs, runs);
 
 //------------------------------------------------
+// 3.
 	for (int n = 0; n < 10; n++)
 		for (int i = 0; i < 28; i++)
 			delete[] freqs[n][i];
@@ -55,7 +62,11 @@ int main()
 //==================================================================================================
 
 
-
+/*
+ * Train
+ * Wrapper function for filling the occurrence arrays from the train data file
+ *   then saving and displaying the data
+ */
 void train(int*** freqs, int* runs)
 {
 	makeFreqs(freqs, runs);
@@ -63,6 +74,12 @@ void train(int*** freqs, int* runs)
 	showFreqs(freqs, runs);
 }
 
+/*
+ * Test
+ * Wrapper function for reading the training data into the occurrence arrays
+ *   then classifiying images from the test data file
+ *   and evaluating the classification using the test data labels file
+ */
 void test(int*** freqs, int* runs)
 {
 	readFreqs(freqs, runs);
@@ -71,7 +88,15 @@ void test(int*** freqs, int* runs)
 }
 
 
-
+/*
+ * Make Frequencies
+ * Reads from the traininglabels and trainingimages files
+ * Stores '#' and '+' characters as foreground features for each digit image
+ *
+ * For each line in the label file, set the digit to the value from that line and read an image from the image file
+ * For each line in an image, increment i then get the characters in the line
+ * For each character in the line, increment j and increment the appropriate feature occurrence if applicable
+ */
 void makeFreqs(int*** freqs, int* runs)
 {
 	std::ifstream labels, images;
@@ -86,11 +111,15 @@ void makeFreqs(int*** freqs, int* runs)
 					freqs[n][i][j]++;
 }
 
+/*
+ * Save Frequencies
+ * Saves the data from the occurrence array data into the frequences file
+ * Used to independently run the test function and the logoddsratio display script
+ */
 void saveFreqs(int*** freqs, int* runs)
 {
 	std::ofstream output;
 	output.open("res/frequencies");
-	//output << "\n";
 	for (int n = 0; n < 10; n++)
 	{
 		output << "# digit " << n << " runs " << runs[n] << "\n";
@@ -104,6 +133,12 @@ void saveFreqs(int*** freqs, int* runs)
 	output.close();
 }
 
+/*
+ * Show Frequencies
+ * Outputs the occurrence data to the std::cout
+ * The character for each pixel feature is determined by its probability
+ * A 'more dense' probability gives a 'more dense' character, each digit is outlined
+ */
 void showFreqs(int*** freqs, int* runs)
 {
 	int run_count;
@@ -140,7 +175,10 @@ void showFreqs(int*** freqs, int* runs)
 }
 
 
-
+/*
+ * Read Frequencies
+ * Reads data from the frequencies file to the occurrence arrays
+ */
 void readFreqs(int*** freqs, int* runs)
 {
 	std::ifstream input;
@@ -151,7 +189,7 @@ void readFreqs(int*** freqs, int* runs)
 	for (std::string line; getline(input, line); i++)
 	{
 		pos = 0, found = 0;
-		if (line[0] == '#')
+		if (line[0] == '#')		// Used to declare the digit and get the run count
 		{
 			i = -1;
 			n++;
@@ -163,7 +201,7 @@ void readFreqs(int*** freqs, int* runs)
 			temp_str = line.substr(pos);
 			runs[n] = std::stoi(temp_str);
 		}
-		else
+		else					// Read the line into a row of occurrences for the current digit
 		{
 			j = 0;
 			while (j < 28 && (found = line.find_first_of(' ', pos)) != std::string::npos)
@@ -178,8 +216,15 @@ void readFreqs(int*** freqs, int* runs)
 	input.close();
 }
 
+/*
+ * Classify
+ * Reads data digit-by-digit from the testimages file then compares to training data from each digit
+ * Calculates the logarithm of the probability of the test digit matching each trained digit and finds the digit with the highest score
+ * @param double k : The smoothing factor to handle 0-instance cases
+ */
 void classify(int*** freqs, int* runs, double k)
 {
+	// Initialize variables
 	int total = 0, run_count, j, max_n;
 	for (int n = 0; n < 10; n++) total += runs[n];
 	double map, max_map;
@@ -199,6 +244,7 @@ void classify(int*** freqs, int* runs, double k)
 	input.open("res/testimages");
 	while (!eof)
 	{
+		// Read an image into the 2D boolean array
 		for (int i = 0; i < 28 && !eof; i++)
 		{
 			eof = !getline(input, line);
@@ -213,6 +259,7 @@ void classify(int*** freqs, int* runs, double k)
 			}
 		}
 
+		// Find the best MAP score
 		max_n = 0;
 		max_map = -DBL_MAX;
 		for (int n = 0; n < 10; n++)
@@ -239,11 +286,26 @@ void classify(int*** freqs, int* runs, double k)
 	output.close();
 }
 
+/*
+ * Get Probability
+ * Calculates the probability of a test feature matching a trained feature
+ * @param double k : The smoothing factor to handle 0-instance cases
+ */
 double getProb(int freq, int run_count, double k, bool foreground)
 { return ((foreground ? freq : run_count-freq) + k)/(run_count + k*2); }
 
+/*
+ * Evaluate
+ * Generates a confusion matrix
+ * The row indicates the real digit, determined by the testlabels file
+ * The column indicates the output digit, determined by the classifier
+ * The value is the number of occurrences that the real digit is mistaken for the output digit
+ * The 11th column is the total number of occurrences for each digit
+ * The 12th column is the total number of matched cases for each digit
+ */
 void evaluate()
 {
+	// Generate and initialize the confusion matrix
 	int** conf = new int* [10];
 	for (int i = 0; i < 10; i++)
 	{
@@ -251,6 +313,8 @@ void evaluate()
 		for (int j = 0; j < 12; j++)
 			conf[i][j] = 0;
 	}
+
+	// Read data from the label file and the output file
 	std::ifstream labels;
 	std::ifstream output;
 	int count = 0, matched = 0;
@@ -265,6 +329,7 @@ void evaluate()
 	labels.close();
 	output.close();
 
+	// Print the percent of correctly matched cases for each digit
 	for (int i = 0; i < 10; i++)
 	{
 		std::cout << i << ":\t" << conf[i][11] << "/" << conf[i][10] << "\t\t= " << 100.0*conf[i][11]/(double)conf[i][10] << "%" << std::endl;
@@ -273,6 +338,7 @@ void evaluate()
 	}
 	std::cout << "all:\t" << matched << "/" << count << "\t= " << 100.0*matched/(double)count << "%" << std::endl;
 
+	// Print the confusion matrix as a 10x10 table of likelihoods, with borders
 	std::cout << "Confusion: " <<std::endl;
 	for (int i = 0; i < 10; i++)
 		std::cout << "\t" << i;
@@ -285,6 +351,7 @@ void evaluate()
 		std::cout << std::endl;
 	}
 
+	// Delete the confusion matrix
 	for (int i = 0; i < 10; i++)
 		delete[] conf[i];
 	delete[] conf;
